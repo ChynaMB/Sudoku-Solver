@@ -1,8 +1,10 @@
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class SudokuBoard {
     private int[][] board;
+    private final Random random = new Random();
 
     //constructor - generate an empty 9x9 sudoku board
     public SudokuBoard(){
@@ -73,6 +75,41 @@ public class SudokuBoard {
         return potentialEntries;
     }
 
+    //backtracking algorithm to fill the board
+    public boolean fillBoard(SudokuBoard board) {
+        for (int row=0; row<9; row++) {
+            for (int col=0; col<9; col++) {
+                if (board.getCell(row, col) == 0) {
+                    int[] numbers = shuffleNumbers();
+                    for (int num : numbers) {
+                        if (board.isValidEntry(row, col, num)) {
+                            board.setCell(row, col, num);
+                            if (fillBoard(board)) {
+                                return true;
+                            } else {
+                                board.setCell(row, col, 0); // backtrack
+                            }
+                        }
+                    }
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    //Fisher-Yates shuffle - algorithm that maximises randomness
+    private int[] shuffleNumbers() {
+        int[] nums = {1,2,3,4,5,6,7,8,9};
+        for (int i = nums.length - 1; i > 0; i--) {
+            int j = random.nextInt(i + 1);
+            int temp = nums[i];
+            nums[i] = nums[j];
+            nums[j] = temp;
+        }
+        return nums;
+    }
+
     //check if the board is filled in
     public boolean boardIsFilled() {
         for (int i=0; i<9; i++) {
@@ -83,6 +120,28 @@ public class SudokuBoard {
             }
         }
         return true;
+    }
+
+    //solve the board using backtracking
+    public boolean solveBoard(SudokuBoard board) {
+        for (int row=0; row<9; row++){
+            for (int col=0; col<9; col++){ //nested for loop allows us to loop through each cell
+                if (board.getCell(row, col) == 0) { //if empty cell has been found
+                    for (int i=1; i<=9; i++){
+                        if (board.isValidEntry(row, col, i)){
+                            board.setCell(row, col, i);
+                            if (solveBoard(board)){ // Recursive call
+                                return true;
+                            }else{
+                                board.setCell(row, col, 0); //backtrack if solveBoard returns false (no valid number solution found)
+                            }
+                        }
+                    }
+                    return false; //no valid number found -> backtrack
+                }
+            }
+        }
+        return true; //no empty cells -> solved
     }
 
 }//end of class
