@@ -1,3 +1,6 @@
+import java.util.List;
+import java.util.ArrayList;
+
 public class SudokuBoard {
     private int[][] board;
 
@@ -58,6 +61,16 @@ public class SudokuBoard {
         }
 
         return true;
+    }
+
+    public List<Integer> potentialEntry(int row, int col){
+        List<Integer> potentialEntries = new ArrayList<>();
+        for(int i=0; i<9; i++){
+            if (isValidEntry(row, col, i)){
+                potentialEntries.add(i);
+            }
+        }
+        return potentialEntries;
     }
 
     //check if the board is filled in
