@@ -1,4 +1,28 @@
-package PACKAGE_NAME;
-
 public class Timer {
-}
+    private int startTime;
+    private int endTime;
+
+    //start the timer
+    public void start(){
+        startTime = (int) System.currentTimeMillis();
+    }
+
+    //stop the timer
+    public void stop(){
+        endTime = (int) System.currentTimeMillis();
+    }
+
+    //get the elapsed time in milliseconds
+    public int getElapsedTime(){
+        return endTime - startTime;
+    }
+
+    //format the elapsed time in minutes and seconds
+    public String formatElapsedTime(){
+        int elapsedTime = getElapsedTime();
+        int minutes = elapsedTime / 60000;
+        int seconds = (elapsedTime % 60000) / 1000;
+        return String.format("%02d:%02d", minutes, seconds);
+    }
+
+}//end  of Timer

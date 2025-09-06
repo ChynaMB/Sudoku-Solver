@@ -131,5 +131,17 @@ public class SudokuBoard {
         return true;
     }
 
+    public boolean checkSolution(SudokuBoard board){
+        for(int row=0; row<9; row++){
+            for(int col=0; col<9; col++){
+                int value = board.getCell(row, col);
+                if (value == 0 || !board.isValidEntry(row, col, value)){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
 }//end of class
 
