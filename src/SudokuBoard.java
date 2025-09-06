@@ -8,7 +8,7 @@ public class SudokuBoard {
 
     //constructor - generate an empty 9x9 sudoku board
     public SudokuBoard(){
-        board = new int[9][9];
+        this.board = new int[9][9];
     }
 
     //constructor - take a pre-existing board and copy it to this board
@@ -22,9 +22,9 @@ public class SudokuBoard {
     }
 
     //getter and setter methods
-    public int[][] getCopyOfBoard(){
+    public SudokuBoard getCopyOfBoard(){
         SudokuBoard boardCopy = new SudokuBoard(this.board);
-        return boardCopy.board;
+        return boardCopy;
     }
     public int getCell(int row, int col){
         return this.board[row][col];
@@ -65,7 +65,8 @@ public class SudokuBoard {
         return true;
     }
 
-    public List<Integer> potentialEntry(int row, int col){
+    //return a list of potential numbers that can go inside a sudoku cell
+    public List<Integer> potentialEntries(int row, int col){
         List<Integer> potentialEntries = new ArrayList<>();
         for(int i=0; i<9; i++){
             if (isValidEntry(row, col, i)){
@@ -76,18 +77,18 @@ public class SudokuBoard {
     }
 
     //backtracking algorithm to fill the board
-    public boolean fillBoard(SudokuBoard board) {
+    public boolean fillBoard() {
         for (int row=0; row<9; row++) {
             for (int col=0; col<9; col++) {
-                if (board.getCell(row, col) == 0) {
+                if (this.getCell(row, col) == 0) {
                     int[] numbers = shuffleNumbers();
                     for (int num : numbers) {
-                        if (board.isValidEntry(row, col, num)) {
-                            board.setCell(row, col, num);
-                            if (fillBoard(board)) {
+                        if (this.isValidEntry(row, col, num)) {
+                            this.setCell(row, col, num);
+                            if (fillBoard()) {
                                 return true;
                             } else {
-                                board.setCell(row, col, 0); // backtrack
+                                this.setCell(row, col, 0); // backtrack
                             }
                         }
                     }
@@ -96,6 +97,14 @@ public class SudokuBoard {
             }
         }
         return true;
+    }
+
+    public void emptyBoard() {
+        for (int i=0; i<9; i++) {
+            for (int j = 0; j < 9; j++) {
+                this.board[i][j] = 0;
+            }
+        }
     }
 
     //Fisher-Yates shuffle - algorithm that maximises randomness
@@ -120,28 +129,6 @@ public class SudokuBoard {
             }
         }
         return true;
-    }
-
-    //solve the board using backtracking
-    public boolean solveBoard(SudokuBoard board) {
-        for (int row=0; row<9; row++){
-            for (int col=0; col<9; col++){ //nested for loop allows us to loop through each cell
-                if (board.getCell(row, col) == 0) { //if empty cell has been found
-                    for (int i=1; i<=9; i++){
-                        if (board.isValidEntry(row, col, i)){
-                            board.setCell(row, col, i);
-                            if (solveBoard(board)){ // Recursive call
-                                return true;
-                            }else{
-                                board.setCell(row, col, 0); //backtrack if solveBoard returns false (no valid number solution found)
-                            }
-                        }
-                    }
-                    return false; //no valid number found -> backtrack
-                }
-            }
-        }
-        return true; //no empty cells -> solved
     }
 
 }//end of class
