@@ -52,4 +52,21 @@ public class SudokuGenerator {
         }
         return unsolvedBoard;
     }
+
+    public void getHint(){
+        if (unsolvedBoard.checkSolution()) {
+            return; //already solved so no hint is needed
+        }
+
+        int row;
+        int col;
+        do {
+            row = random.nextInt(9);
+            col = random.nextInt(9);
+        } while (unsolvedBoard.getCell(row, col) != 0);
+
+        int hintValue = solvedBoard.getCell(row, col);
+        unsolvedBoard.setCell(row, col, hintValue);
+    }
 }
+
