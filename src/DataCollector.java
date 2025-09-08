@@ -2,33 +2,57 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.*;
 
-public class DataCollector {
+public class DataCollector{
     private String stringBoard;
     private String difficulty;
-    private String hintsUsed;
+    private int hintsUsed;
     private String timeTaken; // in seconds
     private int numberOfEntries;
     private int entryNumber;
-    }
 
+    //constructor - for new entries
     public DataCollector(SudokuBoard board, String difficulty, int hintsUsed, String timeTaken){
         this.stringBoard = boardToString(board);
         this.difficulty = difficulty;
-        this.hintsUsed = String.valueOf(hintsUsed);
+        this.hintsUsed = hintsUsed;
         this.timeTaken = timeTaken;
         this.numberOfEntries = getNumberOfEntries();
         this.entryNumber = numberOfEntries + 1;
     }
 
+    //constructor - for existing entries (when reading from CSV)
+    public DataCollector(String stringBoard, String difficulty, int hintsUsed, String timeTaken, int entryNumber){
+        this.stringBoard = stringBoard;
+        this.difficulty = difficulty;
+        this.hintsUsed = hintsUsed;
+        this.timeTaken = timeTaken;
+        this.numberOfEntries = getNumberOfEntries();
+        this.entryNumber = entryNumber;
+    }
+
     //setter methods
     public void setHintsUsed(int hintsUsed) {
-        this.hintsUsed = String.valueOf(hintsUsed);
+        this.hintsUsed = hintsUsed;
     }
     public void setTimeTaken(String timeTaken) {
         this.timeTaken = timeTaken;
     }
+
+    //getter methods
+    public String getStringBoard() {
+        return stringBoard;
+    }
+    public String getDifficulty() {
+        return difficulty;
+    }
+    public int getHintsUsed() {
+        return hintsUsed;
+    }
+    public String getTimeTaken() {
+        return timeTaken;
+    }
+
 
     //convert the board to a string representation
     public String boardToString(SudokuBoard board) {
@@ -63,28 +87,67 @@ public class DataCollector {
             writer.append(String.valueOf(entryNumber)).append(",");
             writer.append(stringBoard.replace("\n", ";")).append(","); //replace newlines with semicolons for CSV format
             writer.append(difficulty).append(",");
-            writer.append(hintsUsed).append(",");
+            writer.append(String.valueOf(hintsUsed)).append(",");
             writer.append(timeTaken).append("\n");
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("An error occurred while writing to the file.", e);
         }
     }
 
     //convert a CSV entry back to a DataCollector object
-    public static DataCollector csvEntryToDataCollector(String csvEntry) {
-        String[] parts = csvEntry.split(",");
-        int entryNumber = Integer.parseInt(parts[0]);
+    public static DataCollector csvToData(int entryNumber) {
+        if(entryNumber <= 0) {
+            throw new IllegalArgumentException("Entry number must be greater than 0");
+        }
+
+        String[] parts = (String.valueOf(entryNumber)).split(",");
         String boardString = parts[1].replace(";", "\n"); //replace semicolons back to newlines
         String difficulty = parts[2];
         int hintsUsed = Integer.parseInt(parts[3]);
         String timeTaken = parts[4];
+        DataCollector data = new DataCollector(boardString, difficulty, hintsUsed, timeTaken, entryNumber);
+        return data;
+    }
 
     //rewrite an entry in the CSV file (based on entry number)
-    public void updateEntry(int entryNumber) {
+    public void updateEntry(int entryNumber, int hintsUsed, String timeTaken) {
         //convert the csv entry back to a DataCollector object
-        //use available setter methods to update hintsUsed and timeTaken
-        //rewrite the entire CSV file with the updated entry
+        DataCollector data = csvToData(entryNumber);
 
+        //use available setter methods to update hintsUsed and timeTaken
+        data.setHintsUsed(hintsUsed);
+        data.setTimeTaken(timeTaken);
+
+        //rewrite the entire CSV file with the updated entry
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("sudoku_data.csv"));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            int currentEntryNumber = 1;
+            //read through each line of the file
+            while ((line = reader.readLine()) != null) {
+                //if this is the line to be updated
+                if (currentEntryNumber == entryNumber) {
+                    //replace the line with the updated data
+                    sb.append(data.entryNumber).append(",");
+                    sb.append(data.stringBoard.replace("\n", ";")).append(","); //replace newlines with semicolons for CSV format
+                    sb.append(data.difficulty).append(",");
+                    sb.append(data.hintsUsed).append(",");
+                    sb.append(data.timeTaken).append("\n");
+                } else {
+                    sb.append(line).append("\n");
+                }
+                currentEntryNumber++;
+            }
+            reader.close();
+            //write the updated content back to the file
+            FileWriter writer = new FileWriter("sudoku_data.csv");
+            writer.write(sb.toString());
+            writer.close();
+        } catch (IOException e) {
+            throw new RuntimeException("An error occurred while updating the file.", e);
+        }
+    }
 
     //get number of lines in the CSV file (number of entries)
     public int getNumberOfEntries() {
@@ -94,10 +157,9 @@ public class DataCollector {
             while (reader.readLine() != null) lines++;
             reader.close();
         } catch (IOException e) {
-            e.printStackTrace();
-    }
+            throw new RuntimeException("An error occurred while updating the file.", e);
+        }
         return lines;
     }
-
 
 }//end of DataCollector
