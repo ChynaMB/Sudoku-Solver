@@ -2,6 +2,12 @@ public class Timer {
     private int startTime;
     private int endTime;
 
+    //constructor
+    public Timer(){
+        this.startTime = 0;
+        this.endTime = 0;
+    }
+
     //start the timer
     public void start(){
         startTime = (int) System.currentTimeMillis();
@@ -10,6 +16,17 @@ public class Timer {
     //stop the timer
     public void stop(){
         endTime = (int) System.currentTimeMillis();
+    }
+
+    //resume the timer
+    public void resume(){
+        startTime = (int) System.currentTimeMillis() - getElapsedTime();
+    }
+
+    //reset the timer
+    public void reset(){
+        startTime = 0;
+        endTime = 0;
     }
 
     //get the elapsed time in milliseconds

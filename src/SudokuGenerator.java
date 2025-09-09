@@ -7,10 +7,22 @@ public class SudokuGenerator {
     String difficultyLevel;
     private final Random random = new Random();
 
+    //constructor - generates a new sudoku puzzle based on the difficulty level
     public SudokuGenerator(String difficultyLevel){
         this.solvedBoard = generateSolvedBoard();
         this.difficultyLevel = difficultyLevel;
         this.unsolvedBoard = generateUnsolvedBoard();
+    }
+
+    //getter methods
+    public SudokuBoard getSolvedBoard() {
+        return this.solvedBoard;
+    }
+    public SudokuBoard getUnsolvedBoard() {
+        return this.unsolvedBoard;
+    }
+    public String getDifficultyLevel() {
+        return this.difficultyLevel;
     }
 
     //method which generates a fully solved sudoku board

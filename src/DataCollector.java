@@ -8,25 +8,28 @@ public class DataCollector{
     private String difficulty;
     private int hintsUsed;
     private String timeTaken; // in seconds
+    private boolean solved;
     private int numberOfEntries;
     private int entryNumber;
 
     //constructor - for new entries
-    public DataCollector(SudokuBoard board, String difficulty, int hintsUsed, String timeTaken){
+    public DataCollector(SudokuBoard board, String difficulty, int hintsUsed, String timeTaken, boolean solved){
         this.stringBoard = boardToString(board);
         this.difficulty = difficulty;
         this.hintsUsed = hintsUsed;
         this.timeTaken = timeTaken;
+        this.solved = solved;
         this.numberOfEntries = getNumberOfEntries();
         this.entryNumber = numberOfEntries + 1;
     }
 
     //constructor - for existing entries (when reading from CSV)
-    public DataCollector(String stringBoard, String difficulty, int hintsUsed, String timeTaken, int entryNumber){
+    public DataCollector(String stringBoard, String difficulty, int hintsUsed, String timeTaken, boolean solved, int entryNumber){
         this.stringBoard = stringBoard;
         this.difficulty = difficulty;
         this.hintsUsed = hintsUsed;
         this.timeTaken = timeTaken;
+        this.solved = solved;
         this.numberOfEntries = getNumberOfEntries();
         this.entryNumber = entryNumber;
     }
@@ -105,7 +108,8 @@ public class DataCollector{
         String difficulty = parts[2];
         int hintsUsed = Integer.parseInt(parts[3]);
         String timeTaken = parts[4];
-        DataCollector data = new DataCollector(boardString, difficulty, hintsUsed, timeTaken, entryNumber);
+        boolean solved = Boolean.parseBoolean(parts[5]);
+        DataCollector data = new DataCollector(boardString, difficulty, hintsUsed, timeTaken, solved, entryNumber);
         return data;
     }
 
@@ -134,6 +138,7 @@ public class DataCollector{
                     sb.append(data.difficulty).append(",");
                     sb.append(data.hintsUsed).append(",");
                     sb.append(data.timeTaken).append("\n");
+                    sb.append(data.solved).append("\n");
                 } else {
                     sb.append(line).append("\n");
                 }
