@@ -12,6 +12,7 @@ public class DataCollector{
     private int numberOfEntries;
     private int entryNumber;
 
+
     //constructor - for new entries
     public DataCollector(SudokuBoard board, String difficulty, int hintsUsed, String timeTaken, boolean solved){
         this.stringBoard = boardToString(board);
@@ -85,13 +86,14 @@ public class DataCollector{
 
     //store the data in a CSV file
     public void storeData() {
+        //append to the file if it exists, otherwise create a new file
         try (FileWriter writer = new FileWriter("sudoku_data.csv", true)) {
             //store the entry in the format: entryNumber,board,difficulty,hintsUsed,timeTaken
-            writer.append(String.valueOf(entryNumber)).append(",");
-            writer.append(stringBoard.replace("\n", ";")).append(","); //replace newlines with semicolons for CSV format
-            writer.append(difficulty).append(",");
-            writer.append(String.valueOf(hintsUsed)).append(",");
-            writer.append(timeTaken).append("\n");
+            writer.append(String.valueOf(this.entryNumber)).append(",");
+            writer.append(this.stringBoard.replace("\n", ";")).append(","); //replace newlines with semicolons for CSV format
+            writer.append(this.difficulty).append(",");
+            writer.append(String.valueOf(this.hintsUsed)).append(",");
+            writer.append(this.timeTaken).append("\n");
         } catch (IOException e) {
             throw new RuntimeException("An error occurred while writing to the file.", e);
         }
@@ -167,4 +169,20 @@ public class DataCollector{
         return lines;
     }
 
+    //fetch all timeTaken values from the CSV file
+    public String[] fetchAllTimeTakenValues() {
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader("sudoku_data.csv"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length >= 5) {
+                    sb.append(parts[4]).append("\n");
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("An error occurred while reading the file.", e);
+        }
+        return sb.toString().split("\n");
+    }
 }//end of DataCollector

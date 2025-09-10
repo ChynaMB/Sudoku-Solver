@@ -2,7 +2,7 @@ import java.util.HashMap;
 import java.util.*;
 
 public class SudokuSolver{
-    private SudokuBoard solvedBoard;
+    //private SudokuBoard solvedBoard;
     private Map<List<Integer>, List<Integer>> sudokuMap;
 
     //constructor
@@ -49,58 +49,64 @@ public class SudokuSolver{
 
     //solve the board using logic (naked and hidden singles)
     public boolean logicSolver(SudokuBoard board){
+        System.out.println("Starting logic solver");
+        SudokuBoard unsolvedBoard = board.getCopyOfBoard();
+        SudokuBoard changesToBoard;
         int changes = 1;
         while(changes > 0){
             changes = 0;
-            SudokuBoard newBoard = fillNakedSingles(board);
-            if (!newBoard.equals(board)){
+            changesToBoard = fillNakedSingles(unsolvedBoard);
+            if (!equalSudoku(changesToBoard, unsolvedBoard)){
                 changes = 1;
-                board = newBoard;
+                unsolvedBoard = changesToBoard;
             }
-            newBoard = fillHiddenSingles(board);
-            if (!newBoard.equals(board)){
+            changesToBoard = fillHiddenSingles(unsolvedBoard);
+            if (!equalSudoku(changesToBoard, unsolvedBoard)){
                 changes = 1;
-                board = newBoard;
+                unsolvedBoard = changesToBoard;
             }
+            System.out.println("Logic iteration complete");
         }
-        if(!board.boardIsFilled()){
+        if(!unsolvedBoard.boardIsFilled()){
+            System.out.println("Board not solved using logic, backtracking required");
             return false;
         }
 
-        this.solvedBoard = board;
+        //this.solvedBoard = unsolvedBoard;
         return true;
     }
 
     //fill in the naked singles inn a board
     public SudokuBoard fillNakedSingles(SudokuBoard board){
         //naked singles are when there is only one possible entry in a cell (based on sudoku logic)
+        SudokuBoard boardCopy = board.getCopyOfBoard();
         int changes = 1;
         while(changes > 0){
             changes = 0;
             for(int row=0; row<9; row++){
                 for(int col=0; col<9; col++){
-                    List<Integer> entries = board.potentialEntries(row,col);
+                    List<Integer> entries = boardCopy.potentialEntries(row,col);
                     if (entries.size() == 1){
                         int entry = entries.getFirst();
-                        board.setCell(row,col,entry);
+                        boardCopy.setCell(row,col,entry);
                         changes = 1;
                     }
                 }
             }
         }
-        return board;
+        return boardCopy;
     }
 
     //fill in the hidden singles on a board
     public SudokuBoard fillHiddenSingles(SudokuBoard board) {
         //hidden singles are when there are multiple possible entries for each cell in a row/column/box
         //but a number appears in only one set of possible entries, thus being the solution to that cell
-
+        SudokuBoard boardCopy = board.getCopyOfBoard();
         //check each row
         for(int row=0; row<9; row++) {
             List<Integer> rowEntries = new ArrayList<>();
             for (int col = 0; col < 9; col++) {
-                List<Integer> entries = board.potentialEntries(row, col);
+                List<Integer> entries = boardCopy.potentialEntries(row, col);
                 rowEntries.addAll(entries);
             }
             for (int num = 1; num <= 9; num++) {
@@ -110,9 +116,9 @@ public class SudokuSolver{
                         List<Integer> cell = new ArrayList<>(2);
                         cell.add(0, row);
                         cell.add(1, col);
-                        List<Integer> entries = board.potentialEntries(row, col);
+                        List<Integer> entries = boardCopy.potentialEntries(row, col);
                         if (entries.contains(num)) {
-                            board.setCell(row, col, num);
+                            boardCopy.setCell(row, col, num);
                         }
                     }
                 }
@@ -123,7 +129,7 @@ public class SudokuSolver{
         for(int col=0; col<9; col++) {
             List<Integer> colEntries = new ArrayList<>();
             for (int row = 0; row < 9; row++) {
-                List<Integer> entries = board.potentialEntries(row, col);
+                List<Integer> entries = boardCopy.potentialEntries(row, col);
                 colEntries.addAll(entries);
             }
             for (int num = 1; num <= 9; num++) {
@@ -133,9 +139,9 @@ public class SudokuSolver{
                         List<Integer> cell = new ArrayList<>(2);
                         cell.add(0, row);
                         cell.add(1, col);
-                        List<Integer> entries = board.potentialEntries(row, col);
+                        List<Integer> entries = boardCopy.potentialEntries(row, col);
                         if (entries.contains(num)) {
-                            board.setCell(row, col, num);
+                            boardCopy.setCell(row, col, num);
                         }
                     }
                 }
@@ -150,7 +156,7 @@ public class SudokuSolver{
                     for (int col = 0; col < 3; col++) {
                         int actualRow = boxRow * 3 + row;
                         int actualCol = boxCol * 3 + col;
-                        List<Integer> entries = board.potentialEntries(actualRow, actualCol);
+                        List<Integer> entries = boardCopy.potentialEntries(actualRow, actualCol);
                         boxEntries.addAll(entries);
                     }
                 }
@@ -164,9 +170,9 @@ public class SudokuSolver{
                                 List<Integer> cell = new ArrayList<>(2);
                                 cell.add(0, actualRow);
                                 cell.add(1, actualCol);
-                                List<Integer> entries = board.potentialEntries(actualRow, actualCol);
+                                List<Integer> entries = boardCopy.potentialEntries(actualRow, actualCol);
                                 if (entries.contains(num)) {
-                                    board.setCell(actualRow, actualCol, num);
+                                    boardCopy.setCell(actualRow, actualCol, num);
                                 }
                             }
                         }
@@ -175,8 +181,20 @@ public class SudokuSolver{
             }
         }
 
-        return board;
+        return boardCopy;
     }
 
+    //check if two sudoku boards are equal
+    public boolean equalSudoku(SudokuBoard board1, SudokuBoard board2){
+        for(int row=0; row<9; row++){
+            for(int col=0; col<9; col++){
+                if (board1.getCell(row, col) != board2.getCell(row, col)){
+                    return false;
+                }
+            }
+        }
+        return true;
+
+    }
 
 }//end of class

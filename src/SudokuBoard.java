@@ -12,25 +12,28 @@ public class SudokuBoard {
     }
 
     //constructor - take a pre-existing board and copy it to this board
-    public SudokuBoard(int[][] board){
-        this.board = new int[9][9]; //create empty board
-        for(int i = 0; i < 9; i++) { //loop through each row
-            for (int j = 0; i < 9; i++) { //loop through each column
-                this.board[i][j] = board[i][j]; //copy the number over
-            }
-        }
+    public SudokuBoard(int[][] newBoard){
+        this.board = newBoard;
     }
 
     //getter and setter methods
-    public SudokuBoard getCopyOfBoard(){
-        SudokuBoard boardCopy = new SudokuBoard(this.board);
-        return boardCopy;
+    public SudokuBoard getCopyOfSudokuBoard(){
+        int[][] copyArray = new int[9][9];
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                copyArray[i][j] = this.board[i][j];
+            }
+        }
+        return new SudokuBoard(copyArray);
     }
     public int getCell(int row, int col){
         return this.board[row][col];
     }
     public void setCell(int row, int col, int value){
         this.board[row][col] = value;
+    }
+    public int[][] getBoard(){
+        return this.board;
     }
 
     // Check if a number entered already exists within the row, column or 3x3 box
@@ -41,14 +44,12 @@ public class SudokuBoard {
                 return false;
             }
         }
-
         //column check
         for(int i=0; i<9; i++){
             if(this.board[i][col] == value){
                 return false;
             }
         }
-
         //3x3 grid check
             //start by finding the upper left corner of the grid
         int startRow = (row/3)*3; //row 0,1,2 -> 0, row 3,4,5 -> 3, row 6,7,8 -> 6
