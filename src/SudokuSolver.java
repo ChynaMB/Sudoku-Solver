@@ -2,28 +2,6 @@ import java.util.HashMap;
 import java.util.*;
 
 public class SudokuSolver{
-    //private SudokuBoard solvedBoard;
-    private Map<List<Integer>, List<Integer>> sudokuMap;
-
-    //constructor
-    public SudokuSolver(SudokuBoard board) {
-        this.sudokuMap = generateSudokuMap(board);
-    }
-
-    //create a map to represent a sudoku board storing all its possible entries in each of its cells
-    public Map<List<Integer>, List<Integer>> generateSudokuMap(SudokuBoard board) {
-        sudokuMap = new HashMap<>();
-        for(int row=0; row<9; row++){
-            for(int col=0; col<9; col++){
-                List<Integer> cell = new ArrayList<>(2);
-                cell.add(0,row);
-                cell.add(1,col);
-                List<Integer> entries = board.potentialEntries(row, col);
-                sudokuMap.put(cell, entries);
-            }
-        }
-        return sudokuMap;
-    }
 
     //solve the board using backtracking
     public boolean backtrackingSolver(SudokuBoard board) {
@@ -50,129 +28,154 @@ public class SudokuSolver{
     //solve the board using logic (naked and hidden singles)
     public boolean logicSolver(SudokuBoard board){
         System.out.println("Starting logic solver");
-        SudokuBoard unsolvedBoard = board.getCopyOfBoard();
+        SudokuBoard unsolvedBoard = board.getCopyOfSudokuBoard();
+        System.out.println("unsolved board created");
         SudokuBoard changesToBoard;
-        int changes = 1;
-        while(changes > 0){
-            changes = 0;
-            changesToBoard = fillNakedSingles(unsolvedBoard);
-            if (!equalSudoku(changesToBoard, unsolvedBoard)){
-                changes = 1;
-                unsolvedBoard = changesToBoard;
-            }
-            changesToBoard = fillHiddenSingles(unsolvedBoard);
-            if (!equalSudoku(changesToBoard, unsolvedBoard)){
-                changes = 1;
-                unsolvedBoard = changesToBoard;
-            }
+        boolean changed = true;
+        while(changed){
+            System.out.println("Starting logic iteration");
+            changed = fillNakedSingles(unsolvedBoard) || fillHiddenSingles(unsolvedBoard);
             System.out.println("Logic iteration complete");
         }
         if(!unsolvedBoard.boardIsFilled()){
-            System.out.println("Board not solved using logic, backtracking required");
+            //loop through the board to count the number of empty cells
+            int emptyCells = 0;
+            for(int row=0; row<9; row++){
+                for(int col=0; col<9; col++) {
+                    if (unsolvedBoard.getCell(row, col) == 0) {
+                        emptyCells++;
+                    }
+                }
+            }
+            if (emptyCells <= 4){
+                //see if solvable using backtracking
+                System.out.println("Only " + emptyCells + " empty cells remaining, trying backtracking solver.");
+                if (backtrackingSolver(unsolvedBoard)){
+                    System.out.println("Backtracking solver succeeded.");
+                    return true;
+                }else{
+                    System.out.println("Backtracking solver failed.");
+                }
+            }
+
+            System.out.println("Board has " + emptyCells + " empty cells remaining after logic solver.");
             return false;
         }
-
-        //this.solvedBoard = unsolvedBoard;
         return true;
     }
 
     //fill in the naked singles inn a board
-    public SudokuBoard fillNakedSingles(SudokuBoard board){
+    public boolean fillNakedSingles(SudokuBoard board){
         //naked singles are when there is only one possible entry in a cell (based on sudoku logic)
-        SudokuBoard boardCopy = board.getCopyOfBoard();
-        int changes = 1;
-        while(changes > 0){
-            changes = 0;
+        boolean changed = false;
+        boolean progress = true;
+
+        while(progress){
+            progress = false;
             for(int row=0; row<9; row++){
                 for(int col=0; col<9; col++){
-                    List<Integer> entries = boardCopy.potentialEntries(row,col);
-                    if (entries.size() == 1){
-                        int entry = entries.getFirst();
-                        boardCopy.setCell(row,col,entry);
-                        changes = 1;
+                    if (board.getCell(row, col) == 0) { //only check empty cells
+                        List<Integer> entries = board.potentialEntries(row,col);
+                        if (entries.size() == 1) {
+                            int entry = entries.get(0);
+                            board.setCell(row, col, entry);
+                            progress = true;
+                            changed = true;
+                        }
                     }
                 }
             }
         }
-        return boardCopy;
+        return changed;
     }
 
     //fill in the hidden singles on a board
-    public SudokuBoard fillHiddenSingles(SudokuBoard board) {
+    public boolean fillHiddenSingles(SudokuBoard board) {
         //hidden singles are when there are multiple possible entries for each cell in a row/column/box
         //but a number appears in only one set of possible entries, thus being the solution to that cell
-        SudokuBoard boardCopy = board.getCopyOfBoard();
-        //check each row
-        for(int row=0; row<9; row++) {
-            List<Integer> rowEntries = new ArrayList<>();
-            for (int col = 0; col < 9; col++) {
-                List<Integer> entries = boardCopy.potentialEntries(row, col);
-                rowEntries.addAll(entries);
-            }
-            for (int num = 1; num <= 9; num++) {
-                if (Collections.frequency(rowEntries, num) == 1) {
-                    //find the cell that contains this number in its potential entries
-                    for (int col = 0; col < 9; col++) {
-                        List<Integer> cell = new ArrayList<>(2);
-                        cell.add(0, row);
-                        cell.add(1, col);
-                        List<Integer> entries = boardCopy.potentialEntries(row, col);
-                        if (entries.contains(num)) {
-                            boardCopy.setCell(row, col, num);
-                        }
-                    }
-                }
-            }
-        }
+        boolean changed = false;
+        boolean progress = true;
 
-        //check each column
-        for(int col=0; col<9; col++) {
-            List<Integer> colEntries = new ArrayList<>();
+        while(progress) {
+            progress = false;
+            //check each row
             for (int row = 0; row < 9; row++) {
-                List<Integer> entries = boardCopy.potentialEntries(row, col);
-                colEntries.addAll(entries);
-            }
-            for (int num = 1; num <= 9; num++) {
-                if (Collections.frequency(colEntries, num) == 1) {
-                    //find the cell that contains this number in its potential entries
-                    for (int row = 0; row < 9; row++) {
-                        List<Integer> cell = new ArrayList<>(2);
-                        cell.add(0, row);
-                        cell.add(1, col);
-                        List<Integer> entries = boardCopy.potentialEntries(row, col);
-                        if (entries.contains(num)) {
-                            boardCopy.setCell(row, col, num);
-                        }
-                    }
-                }
-            }
-        }
-
-        //check each 3x3 grid
-        for(int boxRow=0; boxRow<3; boxRow++) {
-            for(int boxCol=0; boxCol<3; boxCol++) {
-                List<Integer> boxEntries = new ArrayList<>();
-                for (int row = 0; row < 3; row++) {
-                    for (int col = 0; col < 3; col++) {
-                        int actualRow = boxRow * 3 + row;
-                        int actualCol = boxCol * 3 + col;
-                        List<Integer> entries = boardCopy.potentialEntries(actualRow, actualCol);
-                        boxEntries.addAll(entries);
-                    }
+                List<Integer> rowEntries = new ArrayList<>();
+                for (int col = 0; col < 9; col++) {
+                    List<Integer> entries = board.potentialEntries(row, col);
+                    rowEntries.addAll(entries);
                 }
                 for (int num = 1; num <= 9; num++) {
-                    if (Collections.frequency(boxEntries, num) == 1) {
+                    if (Collections.frequency(rowEntries, num) == 1) {
                         //find the cell that contains this number in its potential entries
-                        for (int row = 0; row < 3; row++) {
-                            for (int col = 0; col < 3; col++) {
-                                int actualRow = boxRow * 3 + row;
-                                int actualCol = boxCol * 3 + col;
-                                List<Integer> cell = new ArrayList<>(2);
-                                cell.add(0, actualRow);
-                                cell.add(1, actualCol);
-                                List<Integer> entries = boardCopy.potentialEntries(actualRow, actualCol);
-                                if (entries.contains(num)) {
-                                    boardCopy.setCell(actualRow, actualCol, num);
+                        for (int col = 0; col < 9; col++) {
+                            List<Integer> cell = new ArrayList<>(2);
+                            cell.add(0, row);
+                            cell.add(1, col);
+                            List<Integer> entries = board.potentialEntries(row, col);
+                            if (entries.contains(num)) {
+                                board.setCell(row, col, num);
+                                progress = true;
+                                changed = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            //check each column
+            for (int col = 0; col < 9; col++) {
+                List<Integer> colEntries = new ArrayList<>();
+                for (int row = 0; row < 9; row++) {
+                    List<Integer> entries = board.potentialEntries(row, col);
+                    colEntries.addAll(entries);
+                }
+                for (int num = 1; num <= 9; num++) {
+                    if (Collections.frequency(colEntries, num) == 1) {
+                        //find the cell that contains this number in its potential entries
+                        for (int row = 0; row < 9; row++) {
+                            List<Integer> cell = new ArrayList<>(2);
+                            cell.add(0, row);
+                            cell.add(1, col);
+                            List<Integer> entries = board.potentialEntries(row, col);
+                            if (entries.contains(num)) {
+                                board.setCell(row, col, num);
+                                progress = true;
+                                changed = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            //check each 3x3 grid
+            for (int boxRow = 0; boxRow < 3; boxRow++) {
+                for (int boxCol = 0; boxCol < 3; boxCol++) {
+                    List<Integer> boxEntries = new ArrayList<>();
+                    for (int row = 0; row < 3; row++) {
+                        for (int col = 0; col < 3; col++) {
+                            int actualRow = boxRow * 3 + row;
+                            int actualCol = boxCol * 3 + col;
+                            List<Integer> entries = board.potentialEntries(actualRow, actualCol);
+                            boxEntries.addAll(entries);
+                        }
+                    }
+                    for (int num = 1; num <= 9; num++) {
+                        if (Collections.frequency(boxEntries, num) == 1) {
+                            //find the cell that contains this number in its potential entries
+                            for (int row = 0; row < 3; row++) {
+                                for (int col = 0; col < 3; col++) {
+                                    int actualRow = boxRow * 3 + row;
+                                    int actualCol = boxCol * 3 + col;
+                                    List<Integer> cell = new ArrayList<>(2);
+                                    cell.add(0, actualRow);
+                                    cell.add(1, actualCol);
+                                    List<Integer> entries =  board.potentialEntries(actualRow, actualCol);
+                                    if (entries.contains(num)) {
+                                        board.setCell(actualRow, actualCol, num);
+                                        progress = true;
+                                        changed = true;
+                                    }
                                 }
                             }
                         }
@@ -180,21 +183,7 @@ public class SudokuSolver{
                 }
             }
         }
-
-        return boardCopy;
-    }
-
-    //check if two sudoku boards are equal
-    public boolean equalSudoku(SudokuBoard board1, SudokuBoard board2){
-        for(int row=0; row<9; row++){
-            for(int col=0; col<9; col++){
-                if (board1.getCell(row, col) != board2.getCell(row, col)){
-                    return false;
-                }
-            }
-        }
-        return true;
-
+    return changed;
     }
 
 }//end of class

@@ -54,7 +54,7 @@ public class SudokuUI {
         System.out.println("Sudoku puzzle generated.");
         this.unsolvedBoard = generator.getUnsolvedBoard();
         System.out.println("Successfully generated a solvable sudoku puzzle");
-        this.currentBoard = this.unsolvedBoard.getCopyOfBoard();
+        this.currentBoard = this.unsolvedBoard.getCopyOfSudokuBoard();
         this.solvedBoard = generator.getSolvedBoard();
         this.timer = new Timer();
         System.out.println("Puzzle and timer generated. Now displaying game...");
@@ -244,7 +244,7 @@ public class SudokuUI {
 
     //clear all user entries and reset to original unsolved board
     private void clearBoard() {
-        this.currentBoard = this.unsolvedBoard.getCopyOfBoard();
+        this.currentBoard = this.unsolvedBoard.getCopyOfSudokuBoard();
         displayBoard(this.currentBoard);
     }
 

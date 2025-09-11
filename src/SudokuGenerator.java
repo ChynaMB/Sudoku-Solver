@@ -15,7 +15,7 @@ public class SudokuGenerator {
         this.difficultyLevel = difficultyLevel;
         this.unsolvedBoard = generateUnsolvedBoard();
         System.out.println("Unsolved Board Generated");
-        this.currentBoard = this.unsolvedBoard.getCopyOfBoard();
+        this.currentBoard = this.unsolvedBoard.getCopyOfSudokuBoard();
     }
 
     //getter methods
@@ -45,7 +45,7 @@ public class SudokuGenerator {
     }
 
     public SudokuBoard generateUnsolvedBoard() {
-        unsolvedBoard = this.solvedBoard.getCopyOfBoard();
+        unsolvedBoard = this.solvedBoard.getCopyOfSudokuBoard();
 
         int cluesToKeep;
         if(this.difficultyLevel.equals("easy")){
@@ -60,7 +60,7 @@ public class SudokuGenerator {
 
         boolean notSolvable = true;
         while(notSolvable) {
-            unsolvedBoard = this.solvedBoard.getCopyOfBoard();
+            unsolvedBoard = this.solvedBoard.getCopyOfSudokuBoard();
             int cellsToRemove = (9*9) - cluesToKeep;
 
             while (cellsToRemove > 0) {
@@ -73,7 +73,7 @@ public class SudokuGenerator {
                 cellsToRemove--;
             }
             System.out.println("puzzle generated");
-            this.solver = new SudokuSolver(unsolvedBoard);
+            this.solver = new SudokuSolver();
             System.out.println("SOLVER INITIALISED");
             notSolvable = !(solver.logicSolver(unsolvedBoard));
             System.out.println("LOGIC SOLVER ATTEMPTED");
