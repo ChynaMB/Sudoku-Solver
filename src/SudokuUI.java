@@ -11,6 +11,7 @@ public class SudokuUI {
     private SudokuBoard solvedBoard;
     private SudokuBoard currentBoard;
     private SudokuGenerator generator;
+    private javax.swing.Timer swingTimer;
     private Timer timer;
     private int hintsUsed = 0;
     private boolean solved = false;
@@ -20,9 +21,10 @@ public class SudokuUI {
         frame = new JFrame("Sudoku Game");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
+        frame.setSize(600, 600);
 
-        //menu to select difficulty or load saved game
-        JPanel menuPanel = new JPanel();
+        //menu to select difficulty, view fastest times, or exit
+        JPanel menuPanel = new JPanel(new GridLayout(0, 1, 5, 5));
         JButton newEasyGameButton = new JButton("New Easy Game");
         JButton newMediumGameButton = new JButton("New Medium Game");
         JButton newHardGameButton = new JButton("New Hard Game");
@@ -35,8 +37,7 @@ public class SudokuUI {
         menuPanel.add(fastestTimesButton);
         menuPanel.add(closeBtn);
 
-        frame.add(menuPanel, BorderLayout.NORTH);
-        frame.setSize(600, 600);
+        frame.add(menuPanel);
         frame.setVisible(true);
 
         //action listeners for buttons
@@ -68,9 +69,9 @@ public class SudokuUI {
         JLabel timerLabel = new JLabel("Time: 00:00");
         timerLabel.setFont(new Font("Arial", Font.BOLD, 16));
         timerPanel.add(timerLabel);
+
         //update timer every second
-        javax.swing.Timer swingTimer = new javax.swing.Timer(1000, e -> updateTime(timerLabel));
-        swingTimer.start();
+        this.swingTimer = new javax.swing.Timer(1000, e -> updateTime(timerLabel));
 
         //board panel
         JPanel boardPanel = new JPanel(new GridLayout(9, 9));
@@ -131,13 +132,28 @@ public class SudokuUI {
 
     private void startSudokuGame() {
         displayBoard(this.currentBoard);
-        timer.start();
+        this.swingTimer.start();
+        this.timer.start();
         System.out.println("Game started. Timer is running.");
+
+    }
+
+    private void endSudokuGame() {
+        //stop the timers
+        this.swingTimer.stop();
+        this.timer.stop();
+        //disable further input
+        for (JTextField[] row : cells) {
+            for (JTextField cell : row) {
+                cell.setEditable(false);
+            }
+        }
+        System.out.println("Game ended. Timer stopped. Time taken: " + this.timer.formatElapsedTime());
     }
 
     //method to update the timer label every second
     private void updateTime(JLabel timerLabel) {
-        timerLabel.setText("Time: " + timer.formatElapsedTime());
+        timerLabel.setText("Time: " + this.timer.formatElapsedTime());
     }
 
     private void displayBoard(SudokuBoard board) {
@@ -172,16 +188,10 @@ public class SudokuUI {
         updateBoardFromUI();
         this.solved = this.currentBoard.checkSolution();
         if (this.solved) {
-            timer.stop();
+            endSudokuGame();
             JOptionPane.showMessageDialog(frame, "Congratulations! You've solved the puzzle!");
             //collect data and save to CSV
             saveGame();
-            //disable further input
-            for (JTextField[] row : cells) {
-                for (JTextField cell : row) {
-                    cell.setEditable(false);
-                }
-            }
         } else {
             JOptionPane.showMessageDialog(frame, "The solution is incorrect. Please try again.");
             if(this.generator.getDifficultyLevel().equals("easy")){

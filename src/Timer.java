@@ -1,37 +1,47 @@
 public class Timer {
-    private int startTime;
-    private int endTime;
+    private long startTime;
+    private long endTime;
+    private boolean running;
 
     //constructor
     public Timer(){
         this.startTime = 0;
         this.endTime = 0;
+        this.running = false;
     }
 
     //start the timer
     public void start(){
-        startTime = (int) System.currentTimeMillis();
+        this.startTime = System.currentTimeMillis();
+        this.running = true;
     }
 
     //stop the timer
     public void stop(){
-        endTime = (int) System.currentTimeMillis();
+        this.endTime = System.currentTimeMillis();
+        this.running = false;
     }
 
     //resume the timer
     public void resume(){
-        startTime = (int) System.currentTimeMillis() - getElapsedTime();
+        this.startTime = System.currentTimeMillis() - getElapsedTime();
+        this.running = true;
     }
 
     //reset the timer
     public void reset(){
-        startTime = 0;
-        endTime = 0;
+        this.startTime = 0;
+        this.endTime = 0;
+        this.running = false;
     }
 
     //get the elapsed time in milliseconds
     public int getElapsedTime(){
-        return endTime - startTime;
+        if (running) {
+            return (int) (System.currentTimeMillis() - startTime);
+        } else {
+            return (int) (endTime - startTime);
+        }
     }
 
     //format the elapsed time in minutes and seconds
