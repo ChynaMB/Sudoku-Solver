@@ -50,25 +50,24 @@ public class SudokuUI {
 
     //method to display the Sudoku board UI
     public void startNewGame(JFrame startMenu, String difficulty) {
-        System.out.println("Generating a new " + difficulty + " Sudoku puzzle...");
         this.generator = new SudokuGenerator(difficulty);
-        System.out.println("Sudoku puzzle generated.");
         this.unsolvedBoard = generator.getUnsolvedBoard();
-        System.out.println("Successfully generated a solvable sudoku puzzle");
         this.currentBoard = this.unsolvedBoard.getCopyOfSudokuBoard();
         this.solvedBoard = generator.getSolvedBoard();
         this.timer = new Timer();
-        System.out.println("Puzzle and timer generated. Now displaying game...");
 
         frame = new JFrame("Sudoku Game - " + generator.getDifficultyLevel() + " Level");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
-        //timer panel
-        JPanel timerPanel = new JPanel();
+        //timer and hint counter panel
+        JPanel timerAndHintPanel = new JPanel(new FlowLayout());
         JLabel timerLabel = new JLabel("Time: 00:00");
         timerLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        timerPanel.add(timerLabel);
+        timerAndHintPanel.add(timerLabel);
+        JLabel hintLabel = new JLabel("Hints Used: 0");
+        hintLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        timerAndHintPanel.add(hintLabel);
 
         //update timer every second
         this.swingTimer = new javax.swing.Timer(1000, e -> updateTime(timerLabel));
@@ -91,26 +90,23 @@ public class SudokuUI {
         }
 
         //button panel
-        JPanel buttonPanel = new JPanel();
+        JPanel buttonPanel = new JPanel(new BorderLayout());
         JButton startBtn = new JButton("Start Game");
         JButton checkBtn = new JButton("Check Solution");
         JButton hintBtn = new JButton("Get Hint");
-        JButton solveBtn = new JButton("Solve Sudoku");
         JButton clearBtn = new JButton("Clear All Entries");
         JButton backToStartMenuBtn = new JButton("Back To Start Menu");
 
-        buttonPanel.add(startBtn);
-        buttonPanel.add(checkBtn);
-        buttonPanel.add(hintBtn);
-        buttonPanel.add(solveBtn);
-        buttonPanel.add(clearBtn);
-        buttonPanel.add(backToStartMenuBtn);
+        buttonPanel.add(startBtn, BorderLayout.NORTH);
+        buttonPanel.add(checkBtn, BorderLayout.WEST);
+        buttonPanel.add(hintBtn, BorderLayout.CENTER);
+        buttonPanel.add(clearBtn, BorderLayout.EAST);
+        buttonPanel.add(backToStartMenuBtn, BorderLayout.SOUTH);
 
         //action listeners for buttons
         startBtn.addActionListener(e -> startSudokuGame());
         checkBtn.addActionListener(e -> checkSolution());
-        hintBtn.addActionListener(e -> getHint());
-        solveBtn.addActionListener(e -> solveBoard());
+        hintBtn.addActionListener(e -> getHint(hintLabel));
         clearBtn.addActionListener(e -> clearBoard());
         backToStartMenuBtn.addActionListener(e -> {
             frame.dispose();
@@ -118,7 +114,7 @@ public class SudokuUI {
         });
 
         //add panels to frame
-        frame.add(timerPanel, BorderLayout.NORTH);
+        frame.add(timerAndHintPanel, BorderLayout.NORTH);
         frame.add(boardPanel, BorderLayout.CENTER);
         frame.add(buttonPanel, BorderLayout.SOUTH);
         frame.setSize(800, 800);
@@ -231,7 +227,7 @@ public class SudokuUI {
     }
 
     //display a hint to the user
-    private void getHint() {
+    private void getHint(JLabel hintLabel) {
         updateBoardFromUI();
         if (this.solved) {
             JOptionPane.showMessageDialog(frame, "The puzzle is already solved!");
@@ -241,6 +237,7 @@ public class SudokuUI {
         this.generator.getHint();
         this.hintsUsed++;
         displayBoard(this.currentBoard);
+        hintLabel.setText("Hints Used: " + this.hintsUsed);
     }
 
     //solve the board and display the solution to the user

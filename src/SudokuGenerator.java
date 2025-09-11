@@ -73,9 +73,9 @@ public class SudokuGenerator {
                 cellsToRemove--;
             }
             System.out.println("puzzle generated");
-            this.solver = new SudokuSolver();
+            this.solver = new SudokuSolver(unsolvedBoard);
             System.out.println("SOLVER INITIALISED");
-            notSolvable = !(solver.logicSolver(unsolvedBoard));
+            notSolvable = !(solver.logicSolver());
             System.out.println("LOGIC SOLVER ATTEMPTED");
             if(notSolvable){
                 System.out.println("puzzle not solvable, regenerating");

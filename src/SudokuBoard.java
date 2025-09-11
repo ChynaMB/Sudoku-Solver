@@ -40,13 +40,13 @@ public class SudokuBoard {
     public boolean isValidEntry(int row, int col, int value){
         //row check
         for(int i=0; i<9; i++){
-            if (this.board[row][i] == value){
+            if (this.board[row][i] == value && i != col){
                 return false;
             }
         }
         //column check
         for(int i=0; i<9; i++){
-            if(this.board[i][col] == value){
+            if(this.board[i][col] == value && i != row){
                 return false;
             }
         }
@@ -57,7 +57,10 @@ public class SudokuBoard {
             //then loop through the 3x3 grid and compare the value to the number in the grid
         for (int i=0; i<3; i++){
             for (int j=0; j<3; j++){
-                if (this.board[startRow + i][startCol + j] == value){
+                if (this.board[startRow + i][startCol + j] == value
+                        //make sure we don't compare the cell to itself
+                        && (startRow + i != row)
+                        && (startCol + j != col)){
                     return false;
                 }
             }
@@ -69,7 +72,7 @@ public class SudokuBoard {
     //return a list of potential numbers that can go inside a sudoku cell
     public List<Integer> potentialEntries(int row, int col){
         List<Integer> potentialEntries = new ArrayList<>();
-        for(int i=0; i<9; i++){
+        for(int i=1; i<10; i++){
             if (isValidEntry(row, col, i)){
                 potentialEntries.add(i);
             }
