@@ -6,15 +6,14 @@ import java.util.PriorityQueue;
 public class SudokuUI {
     private JFrame frame;
     private JTextField[][] cells = new JTextField[9][9];
-
+    private SudokuGenerator generator;
     private SudokuBoard unsolvedBoard;
     private SudokuBoard solvedBoard;
     private SudokuBoard currentBoard;
-    private SudokuGenerator generator;
     private javax.swing.Timer swingTimer;
     private Timer timer;
-    private int hintsUsed = 0;
-    private boolean solved = false;
+    private int hintsUsed;
+    private boolean solved;
     private DataCollector dataCollector;
 
     public void MenuUI() {
@@ -52,9 +51,11 @@ public class SudokuUI {
     public void startNewGame(JFrame startMenu, String difficulty) {
         this.generator = new SudokuGenerator(difficulty);
         this.unsolvedBoard = generator.getUnsolvedBoard();
-        this.currentBoard = this.unsolvedBoard.getCopyOfSudokuBoard();
         this.solvedBoard = generator.getSolvedBoard();
+        this.currentBoard = this.unsolvedBoard.getCopyOfSudokuBoard();
         this.timer = new Timer();
+        this.hintsUsed = 0;
+        this.solved = false;
 
         frame = new JFrame("Sudoku Game - " + generator.getDifficultyLevel() + " Level");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -127,6 +128,16 @@ public class SudokuUI {
     }
 
     private void startSudokuGame() {
+        //if the board is already solved, do nothing
+        if (this.solved) {
+            //display message to user
+            JOptionPane.showMessageDialog(frame, "The puzzle is already solved!");
+            return;
+        }
+        //if board is already started, do nothing
+        if (this.swingTimer.isRunning()) {
+            return;
+        }
         displayBoard(this.currentBoard);
         this.swingTimer.start();
         this.timer.start();
