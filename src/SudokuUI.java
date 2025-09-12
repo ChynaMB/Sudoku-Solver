@@ -93,7 +93,9 @@ public class SudokuUI {
                 cell.setFont(font);
 
                 this.cells[row][col] = cell;
+                restrictCellInput(cell);
 
+                //set borders to visually separate 3x3 grids
                 cell.setBorder(BorderFactory.createLineBorder(Color.GRAY));
                 if (row % 3 == 0) cell.setBorder(BorderFactory.createMatteBorder(2, 1, 1, 1, Color.BLACK));
                 if (col % 3 == 0) cell.setBorder(BorderFactory.createMatteBorder(1, 2, 1, 1, Color.BLACK));
@@ -104,21 +106,21 @@ public class SudokuUI {
         //button panel
         JPanel buttonPanel = new JPanel(new BorderLayout());
         JButton startBtn = new JButton("Start Game");
-        JButton checkBtn = new JButton("Check Solution");
         JButton hintBtn = new JButton("Get Hint");
+        JButton checkBtn = new JButton("Check Solution");
         JButton clearBtn = new JButton("Clear All Entries");
         JButton quitBtn = new JButton("Quit");
 
         buttonPanel.add(startBtn, BorderLayout.NORTH);
-        buttonPanel.add(checkBtn, BorderLayout.WEST);
-        buttonPanel.add(hintBtn, BorderLayout.CENTER);
+        buttonPanel.add(hintBtn, BorderLayout.WEST);
+        buttonPanel.add(checkBtn, BorderLayout.CENTER);
         buttonPanel.add(clearBtn, BorderLayout.EAST);
         buttonPanel.add(quitBtn, BorderLayout.SOUTH);
 
         //action listeners for buttons
         startBtn.addActionListener(e -> startSudokuGame());
-        checkBtn.addActionListener(e -> checkSolution());
         hintBtn.addActionListener(e -> getHint(hintLabel));
+        checkBtn.addActionListener(e -> checkSolution());
         clearBtn.addActionListener(e -> clearBoard());
         quitBtn.addActionListener(e -> {
             frame.dispose();
@@ -136,6 +138,20 @@ public class SudokuUI {
         }
 
         System.out.println("New " + difficulty + " game started.");
+    }
+
+    //restrict input to numbers 1-9 only
+    private void restrictCellInput(JTextField cell) {
+        cell.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyReleased(java.awt.event.KeyEvent e) {
+                String text = cell.getText();
+                if (!text.isEmpty() && !text.matches("[1-9]")) {
+                    JOptionPane.showMessageDialog(frame, "Please enter a number between 1 and 9.");
+                    cell.setText(""); // clear invalid input
+                }
+            }
+        });
     }
 
     //start the game by displaying the board and starting the timer
@@ -209,12 +225,15 @@ public class SudokuUI {
     //check if the current board is solved correctly
     private void checkSolution() {
         updateBoardFromUI();
+        if(!this.currentBoard.boardIsFilled()){
+            JOptionPane.showMessageDialog(frame, "The board is not completely filled. Please complete all cells before checking the solution.");
+            return;
+        }
         this.solved = this.currentBoard.checkSolution();
         if (this.solved) {
             endSudokuGame();
             JOptionPane.showMessageDialog(frame, "Congratulations! You've solved the puzzle!");
-            //collect data and save to CSV
-            saveGame();
+            saveGame(); //collect data and save to CSV
         } else {
             JOptionPane.showMessageDialog(frame, "The solution is incorrect. Please try again.");
             if(this.generator.getDifficultyLevel().equals("easy")){
@@ -237,12 +256,15 @@ public class SudokuUI {
                 }
             }
         }
-
     }
 
     //display a hint to the user
     private void getHint(JLabel hintLabel) {
         updateBoardFromUI();
+        if(!this.timer.isRunning()){
+            JOptionPane.showMessageDialog(frame," Please start the game before requesting a hint.");
+            return;
+        }
         if (this.solved) {
             JOptionPane.showMessageDialog(frame, "The puzzle is already solved!");
             return;
