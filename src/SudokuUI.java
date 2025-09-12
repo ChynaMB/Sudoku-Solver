@@ -261,12 +261,12 @@ public class SudokuUI {
     //display a hint to the user
     private void getHint(JLabel hintLabel) {
         updateBoardFromUI();
-        if(!this.timer.isRunning()){
-            JOptionPane.showMessageDialog(frame," Please start the game before requesting a hint.");
-            return;
-        }
         if (this.solved) {
             JOptionPane.showMessageDialog(frame, "The puzzle is already solved!");
+            return;
+        }
+        if(!this.timer.isRunning()){
+            JOptionPane.showMessageDialog(frame," Please start the game before requesting a hint.");
             return;
         }
         this.generator.setCurrentBoard(this.currentBoard);
@@ -348,8 +348,11 @@ public class SudokuUI {
     private Integer[] getTopTenTimes(){
         try {
             String[] times = DataCollector.fetchAllTimeTakenValues();
-            PriorityQueue<Integer> topTen = new PriorityQueue<>(Collections.reverseOrder());
+            PriorityQueue<Integer> topTen = new PriorityQueue<>();
             for (String time : times) {
+                if (time == null || !time.matches("\\d{2}:\\d{2}")) {
+                    continue; // skip invalid times
+                }
                 int totalSeconds = parseTime(time);
                 topTen.offer(totalSeconds);
                 if (topTen.size() > 10) {

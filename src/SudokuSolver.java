@@ -168,10 +168,10 @@ public class SudokuSolver{
                     List<Integer> boxEntries = new ArrayList<>();
                     for (int row = 0; row < 3; row++) {
                         for (int col = 0; col < 3; col++) {
-                            if (this.solvedBoard.getCell(row, col) == 0) {
                                 int actualRow = boxRow * 3 + row;
                                 int actualCol = boxCol * 3 + col;
-                                List<Integer> entries =  this.solvedBoard.potentialEntries(actualRow, actualCol);
+                            if (this.solvedBoard.getCell(actualRow, actualCol) == 0) {
+                                List<Integer> entries = this.solvedBoard.potentialEntries(actualRow, actualCol);
                                 boxEntries.addAll(entries);
                             }
                         }
@@ -181,9 +181,9 @@ public class SudokuSolver{
                             //find the cell that contains this number in its potential entries
                             for (int row = 0; row < 3; row++) {
                                 for (int col = 0; col < 3; col++) {
-                                    if (this.solvedBoard.getCell(row, col) == 0) {
-                                        int actualRow = boxRow * 3 + row;
-                                        int actualCol = boxCol * 3 + col;
+                                    int actualRow = boxRow * 3 + row;
+                                    int actualCol = boxCol * 3 + col;
+                                    if (this.solvedBoard.getCell(actualRow, actualCol) == 0) {
                                         List<Integer> cell = new ArrayList<>(2);
                                         cell.add(0, actualRow);
                                         cell.add(1, actualCol);
