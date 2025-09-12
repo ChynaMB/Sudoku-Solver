@@ -52,4 +52,8 @@ public class Timer {
         return String.format("%02d:%02d", minutes, seconds);
     }
 
+    public boolean isRunning() {
+        return running;
+    }
+
 }//end  of Timer

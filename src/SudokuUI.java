@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.util.PriorityQueue;
+import java.util.Collections;
 
 
 public class SudokuUI {
@@ -16,6 +17,14 @@ public class SudokuUI {
     private boolean solved;
     private DataCollector dataCollector;
 
+    //main method to launch the application
+    public static void main(String[] args) {
+        System.out.println("Welcome to the Sudoku Game!");
+        SudokuUI ui = new SudokuUI();
+        ui.MenuUI();
+    }
+
+    //constructor to initialize the UI and show the main menu
     public void MenuUI() {
         frame = new JFrame("Sudoku Game");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -76,11 +85,13 @@ public class SudokuUI {
         //board panel
         JPanel boardPanel = new JPanel(new GridLayout(9, 9));
         Font font = new Font("Arial", Font.BOLD, 20);
+        //font colour for preset numbers is blue, user entries is black, incorrect entries is red
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
                 JTextField cell = new JTextField();
                 cell.setHorizontalAlignment(JTextField.CENTER);
                 cell.setFont(font);
+
                 this.cells[row][col] = cell;
 
                 cell.setBorder(BorderFactory.createLineBorder(Color.GRAY));
@@ -96,20 +107,20 @@ public class SudokuUI {
         JButton checkBtn = new JButton("Check Solution");
         JButton hintBtn = new JButton("Get Hint");
         JButton clearBtn = new JButton("Clear All Entries");
-        JButton backToStartMenuBtn = new JButton("Back To Start Menu");
+        JButton quitBtn = new JButton("Quit");
 
         buttonPanel.add(startBtn, BorderLayout.NORTH);
         buttonPanel.add(checkBtn, BorderLayout.WEST);
         buttonPanel.add(hintBtn, BorderLayout.CENTER);
         buttonPanel.add(clearBtn, BorderLayout.EAST);
-        buttonPanel.add(backToStartMenuBtn, BorderLayout.SOUTH);
+        buttonPanel.add(quitBtn, BorderLayout.SOUTH);
 
         //action listeners for buttons
         startBtn.addActionListener(e -> startSudokuGame());
         checkBtn.addActionListener(e -> checkSolution());
         hintBtn.addActionListener(e -> getHint(hintLabel));
         clearBtn.addActionListener(e -> clearBoard());
-        backToStartMenuBtn.addActionListener(e -> {
+        quitBtn.addActionListener(e -> {
             frame.dispose();
             MenuUI();
         });
@@ -127,6 +138,7 @@ public class SudokuUI {
         System.out.println("New " + difficulty + " game started.");
     }
 
+    //start the game by displaying the board and starting the timer
     private void startSudokuGame() {
         //if the board is already solved, do nothing
         if (this.solved) {
@@ -145,6 +157,7 @@ public class SudokuUI {
 
     }
 
+    //end the game by stopping the timer and disabling input
     private void endSudokuGame() {
         //stop the timers
         this.swingTimer.stop();
@@ -158,11 +171,12 @@ public class SudokuUI {
         System.out.println("Game ended. Timer stopped. Time taken: " + this.timer.formatElapsedTime());
     }
 
-    //method to update the timer label every second
+    //update the timer label every second
     private void updateTime(JLabel timerLabel) {
         timerLabel.setText("Time: " + this.timer.formatElapsedTime());
     }
 
+    //display the current board state on the UI
     private void displayBoard(SudokuBoard board) {
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
@@ -181,6 +195,7 @@ public class SudokuUI {
         }
     }
 
+    //update the current board state from the UI
     private void updateBoardFromUI() {
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
@@ -191,6 +206,7 @@ public class SudokuUI {
         }
     }
 
+    //check if the current board is solved correctly
     private void checkSolution() {
         updateBoardFromUI();
         this.solved = this.currentBoard.checkSolution();
@@ -210,10 +226,11 @@ public class SudokuUI {
                         }
                     }
                 }
-                //display incorrect cells in red
+                //display incorrect cells in red but only if the cell is not empty
                 for (int row = 0; row < 9; row++) {
                     for (int col = 0; col < 9; col++) {
-                        if (currentBoard.getCell(row, col) != solvedBoard.getCell(row, col)) {
+                        if (currentBoard.getCell(row, col) != solvedBoard.getCell(row, col)
+                                && currentBoard.getCell(row, col) != 0) {
                             cells[row][col].setForeground(Color.RED);
                         }
                     }
@@ -221,20 +238,6 @@ public class SudokuUI {
             }
         }
 
-    }
-
-    //method to save the current game state to a file
-    public void saveGame() {
-        updateBoardFromUI();
-        timer.stop();
-        this.dataCollector = new DataCollector(
-                this.currentBoard,
-                this.generator.getDifficultyLevel(),
-                this.hintsUsed,
-                this.timer.formatElapsedTime(),
-                this.solved
-        );
-        dataCollector.storeData();
     }
 
     //display a hint to the user
@@ -251,19 +254,35 @@ public class SudokuUI {
         hintLabel.setText("Hints Used: " + this.hintsUsed);
     }
 
-    //solve the board and display the solution to the user
-    private void solveBoard() {
-        updateBoardFromUI();
-        displayBoard(this.solvedBoard);
-        this.solved = true;
-        timer.stop();
-        timer.reset();
-    }
-
-    //clear all user entries and reset to original unsolved board
+    //clear all user entries by resetting to original unsolved board
     private void clearBoard() {
+        if (this.solved) {
+            JOptionPane.showMessageDialog(frame, "The puzzle is already solved!");
+            return;
+        }
+        if(!this.timer.isRunning()){
+            JOptionPane.showMessageDialog(frame," Please start the game before clearing the board.");
+        }
         this.currentBoard = this.unsolvedBoard.getCopyOfSudokuBoard();
         displayBoard(this.currentBoard);
+    }
+
+    //save the current game state to a file
+    public void saveGame(){
+        updateBoardFromUI();
+        timer.stop();
+        try{
+            this.dataCollector = new DataCollector(
+                    this.currentBoard,
+                    this.generator.getDifficultyLevel(),
+                    this.hintsUsed,
+                    this.timer.formatElapsedTime(),
+                    this.solved
+            );
+            dataCollector.storeData();
+        } catch (Exception e){
+            throw new RuntimeException("An error occurred while saving the game data.", e);
+        }
     }
 
     //show top 10 fastest solve times from CSV file
@@ -303,27 +322,37 @@ public class SudokuUI {
         }
     }
 
+    //fetch and parse top 10 fastest times from CSV file
     private Integer[] getTopTenTimes(){
-        String[] times = dataCollector.fetchAllTimeTakenValues();
-
-        PriorityQueue<Integer> topTen = new PriorityQueue<>();
-        for (String time : times) {
-            int totalSeconds = parseTime(time);
-            topTen.offer(totalSeconds);
-            if (topTen.size() > 10) {
-                topTen.poll(); // remove smallest
+        try {
+            String[] times = DataCollector.fetchAllTimeTakenValues();
+            PriorityQueue<Integer> topTen = new PriorityQueue<>(Collections.reverseOrder());
+            for (String time : times) {
+                int totalSeconds = parseTime(time);
+                topTen.offer(totalSeconds);
+                if (topTen.size() > 10) {
+                    topTen.poll(); // remove largest
+                }
             }
+            Integer[] bestTimes = topTen.toArray(new Integer[0]);
+            java.util.Arrays.sort(bestTimes);
+            return bestTimes;
+
+        } catch (Exception e) {
+            throw new RuntimeException("An error occurred while reading the file.", e);
         }
-        Integer[] bestTimes = topTen.toArray(new Integer[0]);
-        java.util.Arrays.sort(bestTimes);
-        return bestTimes;
     }
 
+    //convert "mm:ss" format to total seconds
     private int parseTime(String time) {
-        String[] parts = time.split(":");
-        int minutes = Integer.parseInt(parts[0]);
-        int seconds = Integer.parseInt(parts[1]);
-        return minutes * 60 + seconds;
+        try{
+            String[] parts = time.split(":");
+            int minutes = Integer.parseInt(parts[0]);
+            int seconds = Integer.parseInt(parts[1]);
+            return minutes * 60 + seconds;
+        } catch (Exception e) {
+            return Integer.MAX_VALUE; // treat invalid times as very slow
+        }
     }
 
 }//end of SudokuUI

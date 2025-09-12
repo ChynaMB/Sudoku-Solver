@@ -1,7 +1,4 @@
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.*;
 
 public class DataCollector{
     private String stringBoard;
@@ -88,12 +85,18 @@ public class DataCollector{
     public void storeData() {
         //append to the file if it exists, otherwise create a new file
         try (FileWriter writer = new FileWriter("sudoku_data.csv", true)) {
+            //if the file is empty, write the header
+            if (getNumberOfEntries() == 0) {
+                writer.append("EntryNumber,Board,Difficulty,HintsUsed,TimeTaken,Solved\n");
+            }
             //store the entry in the format: entryNumber,board,difficulty,hintsUsed,timeTaken
             writer.append(String.valueOf(this.entryNumber)).append(",");
             writer.append(this.stringBoard.replace("\n", ";")).append(","); //replace newlines with semicolons for CSV format
             writer.append(this.difficulty).append(",");
             writer.append(String.valueOf(this.hintsUsed)).append(",");
-            writer.append(this.timeTaken).append("\n");
+            writer.append(this.timeTaken).append(",");
+            writer.append(String.valueOf(this.solved)).append("\n");
+
         } catch (IOException e) {
             throw new RuntimeException("An error occurred while writing to the file.", e);
         }
@@ -101,19 +104,37 @@ public class DataCollector{
 
     //convert a CSV entry back to a DataCollector object
     public static DataCollector csvToData(int entryNumber) {
-        if(entryNumber <= 0) {
+        if (entryNumber <= 0) {
             throw new IllegalArgumentException("Entry number must be greater than 0");
         }
 
-        String[] parts = (String.valueOf(entryNumber)).split(",");
-        String boardString = parts[1].replace(";", "\n"); //replace semicolons back to newlines
-        String difficulty = parts[2];
-        int hintsUsed = Integer.parseInt(parts[3]);
-        String timeTaken = parts[4];
-        boolean solved = Boolean.parseBoolean(parts[5]);
-        DataCollector data = new DataCollector(boardString, difficulty, hintsUsed, timeTaken, solved, entryNumber);
-        return data;
+        try (BufferedReader reader = new BufferedReader(new FileReader("sudoku_data.csv"))) {
+            String line;
+            int currentEntry = 1;
+
+            while ((line = reader.readLine()) != null) {
+                if (currentEntry == entryNumber) {
+                    String[] parts = line.split(",");
+                    if (parts.length < 6) {
+                        throw new IllegalArgumentException("Malformed CSV entry at line " + entryNumber);
+                    }
+                    String boardString = parts[1].replace(";", "\n");
+                    String difficulty = parts[2];
+                    int hintsUsed = Integer.parseInt(parts[3]);
+                    String timeTaken = parts[4];
+                    boolean solved = Boolean.parseBoolean(parts[5]);
+
+                    return new DataCollector(boardString, difficulty, hintsUsed, timeTaken, solved, entryNumber);
+                }
+                currentEntry++;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading CSV file", e);
+        }
+
+        throw new IllegalArgumentException("Entry number " + entryNumber + " not found in CSV.");
     }
+
 
     //rewrite an entry in the CSV file (based on entry number)
     public void updateEntry(int entryNumber, int hintsUsed, String timeTaken) {
@@ -139,7 +160,7 @@ public class DataCollector{
                     sb.append(data.stringBoard.replace("\n", ";")).append(","); //replace newlines with semicolons for CSV format
                     sb.append(data.difficulty).append(",");
                     sb.append(data.hintsUsed).append(",");
-                    sb.append(data.timeTaken).append("\n");
+                    sb.append(data.timeTaken).append(",");
                     sb.append(data.solved).append("\n");
                 } else {
                     sb.append(line).append("\n");
@@ -157,20 +178,25 @@ public class DataCollector{
     }
 
     //get number of lines in the CSV file (number of entries)
-    public int getNumberOfEntries() {
+    public int getNumberOfEntries(){
+        File file = new File("sudoku_data.csv");
+        if (!file.exists()) {
+            return 0; // Don’t throw, just say no entries yet
+        }
+
         int lines = 0;
-        try{
-            BufferedReader reader = new BufferedReader(new FileReader("sudoku_data.csv"));
-            while (reader.readLine() != null) lines++;
-            reader.close();
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            while (reader.readLine() != null) {
+                lines++;
+            }
         } catch (IOException e) {
-            throw new RuntimeException("An error occurred while updating the file.", e);
+            throw new RuntimeException("An error occurred while reading the file.", e);
         }
         return lines;
     }
 
     //fetch all timeTaken values from the CSV file
-    public String[] fetchAllTimeTakenValues() {
+    public static String[] fetchAllTimeTakenValues() {
         StringBuilder sb = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new FileReader("sudoku_data.csv"))) {
             String line;

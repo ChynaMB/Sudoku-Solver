@@ -85,18 +85,17 @@ public class SudokuGenerator {
     }
 
     public void getHint(){
-        if (currentBoard.equals(solvedBoard)) {
+        if (currentBoard.checkSolution()) {
             return; //board is already solved
         }
-
         int row;
         int col;
 
+        //if the board is completely filled, just give a random hint
         if(currentBoard.boardIsFilled()){
             row = random.nextInt(9);
             col = random.nextInt(9);
         }else {
-
             do {
                 row = random.nextInt(9);
                 col = random.nextInt(9);
