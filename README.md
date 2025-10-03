@@ -1,15 +1,15 @@
-# Sudoku Solver
+# Sudoku Generator
 
 ## Overview
 
-Sudoku Solver is a Java-based Sudoku game and solver that uses both logical techniques and backtracking algorithms to solve puzzles. The project features a graphical user interface (GUI) built with Java Swing, allowing users to interactively play and solve Sudoku puzzles.
+Sudoku Generator is a Java-based Sudoku generator and solver that uses both logical techniques and backtracking algorithms to solve puzzles. The project features a graphical user interface (GUI) built with Java Swing, allowing users to interactively play and solve Sudoku puzzles.
 
 
 ## Features
 
+- **Puzzle Generation**: Generates new Sudoku puzzles of varying difficulty levels.
 - **Sudoku Solver**: Solves Sudoku puzzles using a combination of logic and backtracking algorithms.
 - **Graphical User Interface**: Interactive GUI built with Java Swing for an engaging user experience.
-- **Puzzle Generation**: Generates new Sudoku puzzles of varying difficulty levels.
 - **Timer & Hint System**: Tracks solving time and provides hints to assist players.
 - **Input Validation**: Ensures only valid numbers (1–9) are entered into the puzzle.
 - **Data Storage**: Saves game progress, hints used, and solve times to CSV files, enabling users to track performance and view top scores.  
@@ -19,13 +19,13 @@ Sudoku Solver is a Java-based Sudoku game and solver that uses both logical tech
 1. **Clone the Repository:**
 
   ```bash
-  git clone https://github.com/ChynaMB/Sudoku-Solver.git
+  git clone https://github.com/ChynaMB/Sudoku-Generator.git
   ```
    
 2. **Navigate to the Project Directory:**
 
   ```bash
-  cd Sudoku-Solver
+  cd Sudoku-Generator
   ```
 
 3. **Compile the Java Files:**
